@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import API from '../api/axiosInstance';
+import { DEMO_BOOKS } from '../mocks/mockData';
+import { getBookGenre } from '../utils/catalogHelpers';
 import {
   BookOpen,
   Search,
@@ -23,38 +25,6 @@ import {
   Filter,
 } from 'lucide-react';
 
-const COVER_GRADIENTS = [
-  'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
-  'linear-gradient(135deg, #7c3aed 0%, #c026d3 100%)',
-  'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-  'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
-  'linear-gradient(135deg, #e11d48 0%, #f43f5e 100%)',
-  'linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)',
-  'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-  'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-];
-
-const GENRES = [
-  'Technology',
-  'Classic Fiction',
-  'Software Architecture',
-  'Science',
-  'Productivity',
-  'Philosophy',
-  'Design',
-];
-
-const DEMO_BOOKS = [
-  { id: 1, title: 'Clean Code: A Handbook of Agile Software', author: 'Robert C. Martin', available: true },
-  { id: 2, title: 'Designing Data-Intensive Applications', author: 'Martin Kleppmann', available: true },
-  { id: 3, title: 'The Pragmatic Programmer', author: 'David Thomas & Andrew Hunt', available: false },
-  { id: 4, title: 'Atomic Habits', author: 'James Clear', available: true },
-  { id: 5, title: 'Dune', author: 'Frank Herbert', available: false },
-  { id: 6, title: 'To Kill a Mockingbird', author: 'Harper Lee', available: true },
-  { id: 7, title: 'Refactoring: Improving Existing Code', author: 'Martin Fowler', available: true },
-  { id: 8, title: '1984', author: 'George Orwell', available: true },
-];
-
 const BookList = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,13 +33,11 @@ const BookList = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [sortBy, setSortBy] = useState('title_asc');
   const [viewMode, setViewMode] = useState('grid');
-
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
   const [titleInput, setTitleInput] = useState('');
   const [authorInput, setAuthorInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
   const [deleteId, setDeleteId] = useState(null);
 
   const { user } = useAuth();
@@ -103,7 +71,6 @@ const BookList = () => {
       addToast('Please login or create an account to borrow books.', 'info');
       return;
     }
-
     try {
       await API.post(`/borrow/books/${book.id}`);
       addToast(`Successfully borrowed "${book.title}"!`, 'success');
@@ -144,7 +111,6 @@ const BookList = () => {
       addToast('Title and Author are required', 'error');
       return;
     }
-
     setSubmitting(true);
     try {
       if (editingBook) {
@@ -210,25 +176,13 @@ const BookList = () => {
     }
   };
 
-  const getBookCoverGradient = (id) => {
-    const index = Math.abs(id || 0) % COVER_GRADIENTS.length;
-    return COVER_GRADIENTS[index];
-  };
-
-  const getBookGenre = (id, title) => {
-    const hash = (id || 0) + (title ? title.length : 0);
-    return GENRES[hash % GENRES.length];
-  };
-
   const filteredBooks = useMemo(() => {
     return books
       .filter((book) => {
         const matchesSearch =
           book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           book.author?.toLowerCase().includes(searchQuery.toLowerCase());
-
         if (!matchesSearch) return false;
-
         if (filterStatus === 'AVAILABLE') return book.available;
         if (filterStatus === 'BORROWED') return !book.available;
         return true;
@@ -252,32 +206,32 @@ const BookList = () => {
         {isDemoMode && (
           <div
             style={{
-              background: 'rgba(99, 102, 241, 0.1)',
-              border: '1px solid rgba(99, 102, 241, 0.25)',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-subtle)',
               borderRadius: 'var(--radius-md)',
-              padding: '0.75rem 1.25rem',
-              marginTop: '1.5rem',
+              padding: '0.6rem 1rem',
+              marginTop: '1.25rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
               color: 'var(--text-main)',
               flexWrap: 'wrap',
               gap: '0.5rem',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Sparkles size={16} color="var(--primary)" />
+              <Sparkles size={15} color="var(--primary)" />
               <span>
-                <strong>Catalog Preview:</strong> Displaying interactive collection. Start your Spring Boot backend on port 8080 to sync live database items!
+                <strong>Catalog Preview Mode:</strong> Displaying mock data. Start Spring Boot backend on port 8080 to sync live database items.
               </span>
             </div>
             <button
               onClick={fetchBooks}
               style={{
                 background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                padding: '0.25rem 0.65rem',
+                border: '1px solid var(--border-strong)',
+                padding: '0.2rem 0.5rem',
                 borderRadius: 'var(--radius-sm)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
@@ -289,62 +243,54 @@ const BookList = () => {
           </div>
         )}
 
-        {/* Hero Section */}
+        {/* Header Section */}
         <section className="hero-banner">
-          <div className="hero-glow-blob"></div>
-          <div className="hero-glow-blob-2"></div>
           <div className="hero-content">
             <div className="hero-text-block">
               <div className="hero-badge-tag">
-                <Sparkles size={14} />
-                <span>Next-Generation Library</span>
+                <Sparkles size={13} />
+                <span>Open-Access Portal</span>
               </div>
-              <h1 className="hero-title">
-                Discover Knowledge. <br />
-                Ignite Your Imagination.
-              </h1>
+              <h1 className="hero-title">Library Collection</h1>
               <p className="hero-desc">
-                Browse our curated collection of software engineering, classic literature, and science volumes. Borrow with a single click and track your reading journey.
+                Browse software engineering, computer science, and classic literature volumes.
               </p>
             </div>
-
             <div className="hero-stats-row">
               <div className="hero-stat-card">
                 <div className="stat-icon-wrapper" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
-                  <Library size={18} />
+                  <Library size={16} />
                 </div>
                 <span className="stat-num">{totalBooks}</span>
                 <span className="stat-label">Total Books</span>
               </div>
-
               <div className="hero-stat-card">
                 <div className="stat-icon-wrapper" style={{ background: 'var(--success-light)', color: 'var(--success)' }}>
-                  <CheckCircle size={18} />
+                  <CheckCircle size={16} />
                 </div>
                 <span className="stat-num">{availableBooks}</span>
-                <span className="stat-label">Available Now</span>
+                <span className="stat-label">Available</span>
               </div>
-
               <div className="hero-stat-card">
                 <div className="stat-icon-wrapper" style={{ background: 'var(--warning-light)', color: 'var(--warning)' }}>
-                  <Clock size={18} />
+                  <Clock size={16} />
                 </div>
                 <span className="stat-num">{borrowedBooks}</span>
-                <span className="stat-label">Borrowed</span>
+                <span className="stat-label">Checked Out</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Controls Toolbar */}
+        {/* Catalog Controls Toolbar */}
         <div className="catalog-toolbar">
           <div className="toolbar-primary-row">
             <div className="search-box-wrapper">
-              <Search size={18} className="search-icon" />
+              <Search size={16} className="search-icon" />
               <input
                 type="text"
                 className="search-input"
-                placeholder="Search by title or author name..."
+                placeholder="Search by title or author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -358,20 +304,18 @@ const BookList = () => {
                 </button>
               )}
             </div>
-
             <div className="toolbar-actions-group">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <ArrowUpDown size={15} color="var(--text-dim)" />
+                <ArrowUpDown size={14} color="var(--text-dim)" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   style={{
-                    padding: '0.45rem 0.85rem',
+                    padding: '0.4rem 0.75rem',
                     borderRadius: 'var(--radius-md)',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
+                    fontSize: '0.82rem',
+                    fontWeight: 500,
                     width: 'auto',
-                    minWidth: '130px',
                   }}
                 >
                   <option value="title_asc">Title (A-Z)</option>
@@ -380,7 +324,6 @@ const BookList = () => {
                   <option value="id_desc">Newest Added</option>
                 </select>
               </div>
-
               <div className="view-toggle-group">
                 <button
                   className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
@@ -388,7 +331,7 @@ const BookList = () => {
                   title="Card Grid View"
                   aria-label="Card Grid View"
                 >
-                  <LayoutGrid size={18} />
+                  <LayoutGrid size={16} />
                 </button>
                 <button
                   className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
@@ -396,26 +339,24 @@ const BookList = () => {
                   title="Table View"
                   aria-label="Table View"
                 >
-                  <List size={18} />
+                  <List size={16} />
                 </button>
               </div>
-
               {user?.role === 'ADMIN' && (
                 <button className="btn-add-book" onClick={openAddModal}>
-                  <Plus size={18} />
+                  <Plus size={16} />
                   <span>Add Book</span>
                 </button>
               )}
             </div>
           </div>
-
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
             <div className="filter-pills-group">
               <button
                 className={`filter-pill-btn ${filterStatus === 'ALL' ? 'active' : ''}`}
                 onClick={() => setFilterStatus('ALL')}
               >
-                All Volumes
+                All
                 <span className="filter-count-badge">{totalBooks}</span>
               </button>
               <button
@@ -433,31 +374,28 @@ const BookList = () => {
                 <span className="filter-count-badge">{borrowedBooks}</span>
               </button>
             </div>
-
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', fontWeight: 500 }}>
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-dim)', fontWeight: 500 }}>
               Showing {filteredBooks.length} of {totalBooks} items
             </div>
           </div>
         </div>
 
-        {/* Content Body */}
+        {/* Content Section */}
         {loading ? (
           <div className="empty-state">
-            <div className="empty-state-icon" style={{ animation: 'pulseGlow 1.5s infinite' }}>
-              <BookOpen size={28} />
+            <div className="empty-state-icon">
+              <BookOpen size={24} />
             </div>
             <h3 className="empty-state-title">Loading Catalog...</h3>
-            <p className="empty-state-desc">Fetching the library collection for you.</p>
+            <p className="empty-state-desc">Fetching items from the database.</p>
           </div>
         ) : filteredBooks.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">
-              <Filter size={28} />
+              <Filter size={24} />
             </div>
             <h3 className="empty-state-title">No books match your criteria</h3>
-            <p className="empty-state-desc">
-              Try adjusting your search query or switching availability filter.
-            </p>
+            <p className="empty-state-desc">Try adjusting your query or switching filters.</p>
             <button
               className="btn-primary-nav"
               style={{ display: 'inline-flex', margin: '0 auto' }}
@@ -472,16 +410,11 @@ const BookList = () => {
         ) : viewMode === 'grid' ? (
           <div className="books-grid">
             {filteredBooks.map((book) => {
-              const bgGradient = getBookCoverGradient(book.id);
               const genre = getBookGenre(book.id, book.title);
-
               return (
                 <div key={book.id} className="book-card fade-in">
-                  <div className="book-cover-banner" style={{ background: bgGradient }}>
-                    <div className="book-cover-spine"></div>
-                    <div className="book-cover-pattern"></div>
+                  <div className="book-cover-banner">
                     <span className="book-genre-tag">{genre}</span>
-
                     <span
                       className={`book-status-badge ${
                         book.available ? 'available' : 'borrowed'
@@ -494,39 +427,36 @@ const BookList = () => {
                         </>
                       ) : (
                         <>
-                          <Clock size={12} />
-                          Checked Out
+                          <Clock size={11} />
+                          Borrowed
                         </>
                       )}
                     </span>
                   </div>
-
                   <div className="book-card-body">
                     <span className="book-id-chip">BOOK #{book.id}</span>
                     <h3 className="book-title" title={book.title}>
                       {book.title}
                     </h3>
                     <div className="book-author-row">
-                      <User size={14} />
+                      <User size={13} />
                       <span>{book.author}</span>
                     </div>
-
                     <div className="book-card-actions">
                       {book.available ? (
                         <button
                           className="btn-borrow"
                           onClick={() => handleBorrow(book)}
                         >
-                          <BookmarkPlus size={16} />
-                          <span>Borrow Book</span>
+                          <BookmarkPlus size={15} />
+                          <span>Borrow</span>
                         </button>
                       ) : (
                         <button className="btn-borrow" disabled>
-                          <Clock size={16} />
+                          <Clock size={15} />
                           <span>Unavailable</span>
                         </button>
                       )}
-
                       {user?.role === 'ADMIN' && (
                         <>
                           <button
@@ -535,7 +465,7 @@ const BookList = () => {
                             title="Edit Book Details"
                             aria-label="Edit book"
                           >
-                            <Edit2 size={15} />
+                            <Edit2 size={14} />
                           </button>
                           <button
                             className="btn-action-icon danger"
@@ -543,7 +473,7 @@ const BookList = () => {
                             title="Delete Book"
                             aria-label="Delete book"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={14} />
                           </button>
                         </>
                       )}
@@ -558,7 +488,7 @@ const BookList = () => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th style={{ width: '80px' }}>ID</th>
+                  <th style={{ width: '70px' }}>ID</th>
                   <th>Title</th>
                   <th>Author</th>
                   <th>Category</th>
@@ -571,11 +501,11 @@ const BookList = () => {
                   const genre = getBookGenre(book.id, book.title);
                   return (
                     <tr key={book.id}>
-                      <td style={{ fontWeight: 700, color: 'var(--text-dim)' }}>
+                      <td style={{ fontWeight: 600, color: 'var(--text-dim)' }}>
                         #{book.id}
                       </td>
                       <td>
-                        <strong style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>
+                        <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
                           {book.title}
                         </strong>
                       </td>
@@ -584,10 +514,10 @@ const BookList = () => {
                         <span
                           style={{
                             background: 'var(--bg-subtle)',
-                            padding: '0.2rem 0.6rem',
+                            padding: '0.15rem 0.5rem',
                             borderRadius: 'var(--radius-sm)',
-                            fontSize: '0.78rem',
-                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
                             color: 'var(--text-muted)',
                           }}
                         >
@@ -602,12 +532,12 @@ const BookList = () => {
                         >
                           {book.available ? (
                             <>
-                              <CheckCircle size={14} />
+                              <CheckCircle size={13} />
                               Available
                             </>
                           ) : (
                             <>
-                              <Clock size={14} />
+                              <Clock size={13} />
                               Borrowed
                             </>
                           )}
@@ -619,7 +549,7 @@ const BookList = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'flex-end',
-                            gap: '0.5rem',
+                            gap: '0.4rem',
                           }}
                         >
                           {book.available && (
@@ -628,20 +558,19 @@ const BookList = () => {
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '0.35rem',
-                                background: 'var(--brand-gradient)',
+                                gap: '0.3rem',
+                                background: 'var(--primary)',
                                 color: '#fff',
-                                padding: '0.4rem 0.8rem',
+                                padding: '0.35rem 0.75rem',
                                 borderRadius: 'var(--radius-md)',
-                                fontSize: '0.82rem',
+                                fontSize: '0.8rem',
                                 fontWeight: 600,
                               }}
                             >
-                              <BookmarkPlus size={14} />
+                              <BookmarkPlus size={13} />
                               Borrow
                             </button>
                           )}
-
                           {user?.role === 'ADMIN' && (
                             <>
                               <button
@@ -649,14 +578,14 @@ const BookList = () => {
                                 onClick={() => openEditModal(book)}
                                 title="Edit"
                               >
-                                <Edit2 size={14} />
+                                <Edit2 size={13} />
                               </button>
                               <button
                                 className="btn-action-icon danger"
                                 onClick={() => setDeleteId(book.id)}
                                 title="Delete"
                               >
-                                <Trash2 size={14} />
+                                <Trash2 size={13} />
                               </button>
                             </>
                           )}
@@ -678,17 +607,12 @@ const BookList = () => {
             <div className="modal-header">
               <div className="modal-title-box">
                 <div className="modal-icon-badge">
-                  {editingBook ? <Edit2 size={20} /> : <BookMarked size={20} />}
+                  {editingBook ? <Edit2 size={18} /> : <BookMarked size={18} />}
                 </div>
                 <div>
                   <h3 className="modal-title">
-                    {editingBook ? 'Edit Book Information' : 'Add New Book to Collection'}
+                    {editingBook ? 'Edit Book Information' : 'Add New Book'}
                   </h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    {editingBook
-                      ? 'Update the volume specifications below'
-                      : 'Provide book metadata to enrich the catalog'}
-                  </p>
                 </div>
               </div>
               <button
@@ -696,16 +620,15 @@ const BookList = () => {
                 onClick={() => setModalOpen(false)}
                 aria-label="Close modal"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
-
             <form onSubmit={handleSaveBook}>
               <div className="modal-body">
                 <div className="form-group">
                   <label className="form-label">Book Title</label>
                   <div className="input-with-icon">
-                    <BookOpen size={18} className="input-icon" />
+                    <BookOpen size={16} className="input-icon" />
                     <input
                       type="text"
                       placeholder="e.g. Designing Data-Intensive Applications"
@@ -716,11 +639,10 @@ const BookList = () => {
                     />
                   </div>
                 </div>
-
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Author Name</label>
                   <div className="input-with-icon">
-                    <User size={18} className="input-icon" />
+                    <User size={16} className="input-icon" />
                     <input
                       type="text"
                       placeholder="e.g. Martin Kleppmann"
@@ -731,7 +653,6 @@ const BookList = () => {
                   </div>
                 </div>
               </div>
-
               <div className="modal-footer">
                 <button
                   type="button"
@@ -744,7 +665,7 @@ const BookList = () => {
                   type="submit"
                   disabled={submitting}
                   className="btn-submit-auth"
-                  style={{ width: 'auto', marginTop: 0, padding: '0.65rem 1.5rem' }}
+                  style={{ width: 'auto', marginTop: 0, padding: '0.45rem 1.25rem' }}
                 >
                   {submitting
                     ? 'Saving...'
@@ -761,31 +682,30 @@ const BookList = () => {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="modal-overlay" onClick={() => setDeleteId(null)}>
-          <div className="modal-card" style={{ maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-body" style={{ textAlign: 'center', padding: '2.25rem 1.5rem 1.5rem' }}>
+          <div className="modal-card" style={{ maxWidth: '380px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-body" style={{ textAlign: 'center', padding: '1.75rem 1.25rem 1.25rem' }}>
               <div
                 style={{
-                  width: '56px',
-                  height: '56px',
+                  width: '44px',
+                  height: '44px',
                   borderRadius: '50%',
                   background: 'var(--danger-light)',
                   color: 'var(--danger)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 1.25rem',
+                  margin: '0 auto 1rem',
                 }}
               >
-                <AlertTriangle size={28} />
+                <AlertTriangle size={22} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+              <h3 style={{ fontSize: '1.15rem', marginBottom: '0.4rem' }}>
                 Delete this book?
               </h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                Are you sure you want to remove Book #{deleteId} from the catalog? This action cannot be undone.
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                Are you sure you want to remove Book #{deleteId}? This action cannot be undone.
               </p>
-
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                 <button
                   type="button"
                   className="btn-ghost-nav"
@@ -799,10 +719,10 @@ const BookList = () => {
                   style={{
                     background: 'var(--danger)',
                     color: '#ffffff',
-                    padding: '0.65rem 1.5rem',
+                    padding: '0.45rem 1.25rem',
                     borderRadius: 'var(--radius-md)',
                     fontWeight: 600,
-                    fontSize: '0.9rem',
+                    fontSize: '0.85rem',
                   }}
                 >
                   Yes, Delete Book
