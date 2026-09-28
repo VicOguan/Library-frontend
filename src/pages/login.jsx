@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import API from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { createMockToken } from '../utils/jwt';
 import {
   BookOpen,
   User,
@@ -23,17 +24,9 @@ function Login() {
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  const createMockToken = (uname, role) => {
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const exp = Math.floor(Date.now() / 1000) + 3600 * 24;
-    const payload = btoa(JSON.stringify({ sub: uname, role: role, exp: exp }));
-    return `${header}.${payload}.mockSignature`;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const response = await API.post('/auth/login', { username, password });
       login(response.data.token);
@@ -62,17 +55,14 @@ function Login() {
 
   return (
     <div className="auth-page-wrapper">
-      <div className="auth-ambient-glow"></div>
-
       <div className="auth-card fade-in">
         <div className="auth-header">
           <div className="auth-icon-badge">
-            <BookOpen size={28} />
+            <BookOpen size={24} />
           </div>
           <h2 className="auth-title">Welcome Back</h2>
           <p className="auth-subtitle">Sign in to access your Ohara account</p>
         </div>
-
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Username</label>
@@ -88,7 +78,6 @@ function Login() {
               />
             </div>
           </div>
-
           <div className="form-group">
             <label className="form-label">Password</label>
             <div className="input-with-icon">
@@ -99,14 +88,13 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ paddingRight: '2.75rem' }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute',
-                  right: '0.85rem',
+                  right: '0.75rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   background: 'transparent',
@@ -120,7 +108,6 @@ function Login() {
               </button>
             </div>
           </div>
-
           <button
             type="submit"
             disabled={loading}
@@ -131,7 +118,6 @@ function Login() {
             <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
           </button>
         </form>
-
         <div className="demo-credentials-box">
           <div className="demo-title">
             <Sparkles size={14} color="var(--primary)" />
@@ -157,7 +143,6 @@ function Login() {
             </button>
           </div>
         </div>
-
         <div className="auth-footer">
           Don't have an account?{' '}
           <Link to="/register" className="auth-link">
