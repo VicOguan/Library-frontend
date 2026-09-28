@@ -1,16 +1,35 @@
-# React + Vite
+# 📚 Ohara Digital Library Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
 
-Currently, two official plugins are available:
+A full-stack open-access library system built with React (Vite) and Spring Boot REST API.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🏛️ System Architecture & Backend Overview
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+While this live demo runs entirely on GitHub Pages using client-side fallback simulation, it is architected to integrate seamlessly with a Spring Boot REST API.
 
-## Expanding the Oxlint configuration
+### 🔐 Backend Tech Stack & Security Highlights
+- **Framework:** Spring Boot 3.x with Spring Data JPA
+- **Security:** Spring Security with Stateless JWT Authentication Filter (`Bearer` tokens)
+- **Database:** MySQL relational model for books, users, and borrowing transactions
+- **Role-Based Access Control (RBAC):**
+  - `ROLE_USER`: Can view catalog, search books, borrow items, and manage personal loans.
+  - `ROLE_ADMIN`: Full access + CRUD controls (Create, Edit, Delete volumes in the catalog).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+---
+
+## 🎥 Architecture & Security Proof
+
+| Feature | Backend Implementation Details | Frontend Integration |
+| :--- | :--- | :--- |
+| **Authentication** | `/api/auth/login` issues signed JWTs | Stored in `localStorage`, injected via `Axios` request interceptors |
+| **Route Protection** | `SecurityFilterChain` validates claims & `exp` | `ProtectedRoute.jsx` checks roles before granting page entry |
+| **API Fallback** | Handled via Custom Exception Handling | React state gracefully falls back to local simulation when offline |
+
+> 📁 **View Backend Codebase:** [Link to your library-backend repository]  
+> 📄 **Postman Collection & API Docs:** Located in `/docs/Postman_Collection.json`
